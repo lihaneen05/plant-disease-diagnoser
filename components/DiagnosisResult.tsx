@@ -33,7 +33,6 @@ const InfoSection: React.FC<{ number: string; title: string; icon: React.ReactNo
 );
 
 export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ result }) => {
-  // Bar chart data – matches screenshot (green bars, peak near score)
   const chartData = {
     labels: Array.from({ length: 10 }, (_, i) => `${i * 10}`),
     datasets: [
@@ -42,7 +41,7 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ result }) => {
         data: Array.from({ length: 10 }, (_, i) => {
           const x = i * 10;
           const score = result.score;
-          return Math.exp(-Math.pow((x - score) / 20, 2)); // Gaussian
+          return Math.exp(-Math.pow((x - score) / 20, 2));
         }),
         backgroundColor: 'rgba(34, 197, 94, 0.6)',
         borderColor: 'rgba(34, 197, 94, 1)',
@@ -63,7 +62,6 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ result }) => {
 
   return (
     <div className="animate-fade-in">
-      {/* Header */}
       <div className="text-center mb-6">
         <p className="text-sm text-gray-600 mb-2">Most Likely Diagnosis</p>
         <div className="flex items-center justify-center gap-2 mb-1">
@@ -78,7 +76,6 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ result }) => {
         </p>
       </div>
 
-      {/* Chart */}
       <div className="h-64 mb-6">
         <Bar data={chartData} options={options} />
       </div>
@@ -86,7 +83,6 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ result }) => {
         Visualization of the aggregated fuzzy output and the final diagnostic score.
       </p>
 
-      {/* Info Sections */}
       {result.diseaseInfo && (
         <div className="space-y-4 p-4 bg-green-50 rounded-lg border border-green-200">
           <InfoSection number="1" title="Description" icon={<InfoIcon className="h-5 w-5" />}>
