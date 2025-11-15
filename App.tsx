@@ -82,4 +82,28 @@ const App: React.FC = () => {
             <h2 className="text-xl font-bold text-green-800 mb-4">Diagnosis Result</h2>
             {isLoading ? (
               <div className="text-center py-12 text-gray-500">
-                <div className="animate-spin w-10 h
+                <div className="animate-spin w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-3"></div>
+                <p>Analyzing symptoms...</p>
+              </div>
+            ) : result ? (
+              <DiagnosisResult result={result} />
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <Leaf className="h-16 w-16 mx-auto mb-3 opacity-30" />
+                <p>Your plant's diagnosis will appear here.</p>
+                <p className="text-sm">Adjust sliders and click "Run Diagnosis"</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <footer className="text-center mt-10 text-xs text-gray-500">
+          <p>Built with React, TypeScript, and a dash of Fuzzy Logic.</p>
+          <p>Based on the work of Ahmad Shabbir, Haneen Tahir, and Hamza Amer Sheikh.</p>
+        </footer>
+      </div>
+    </div>
+  );
+};
+
+export default App;
