@@ -8,11 +8,13 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "react": "^19.2.0",
-    "recharts": "^3.4.1",
-    "react-dom": "^19.2.0"
-  },
+ "dependencies": {
+  "react": "^19.2.0",
+  "recharts": "^3.4.1",
+  "react-dom": "^19.2.0",
+  "chart.js": "^4.4.4",
+  "react-chartjs-2": "^5.2.0"
+},
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
