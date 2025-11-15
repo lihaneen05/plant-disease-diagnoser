@@ -4,7 +4,13 @@ import { DiagnosisResult } from './components/DiagnosisResult';
 import { runDiagnosis } from './services/fuzzyLogicService';
 import type { SymptomInputs, DiagnosisOutput } from './types';
 import { SYMPTOMS } from './constants';
-import { Leaf } from 'lucide-react';
+
+const LeafIcon = (props: any) => (
+  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+    <path d="M10 2C7.24 5.76 7.24 18.24 10 22"/>
+  </svg>
+);
 
 const App: React.FC = () => {
   const [symptoms, setSymptoms] = useState<SymptomInputs>({
@@ -35,7 +41,7 @@ const App: React.FC = () => {
         {/* Header */}
         <header className="text-center mb-8">
           <div className="flex justify-center items-center gap-2 mb-2">
-            <Leaf className="h-8 w-8 text-green-600" />
+            <LeafIcon className="h-8 w-8 text-green-600" />
             <h1 className="text-3xl md:text-4xl font-bold text-green-800">Plant Disease Diagnoser</h1>
           </div>
           <p className="text-green-700 max-w-2xl mx-auto">
@@ -89,7 +95,7 @@ const App: React.FC = () => {
               <DiagnosisResult result={result} />
             ) : (
               <div className="text-center py-12 text-gray-400">
-                <Leaf className="h-16 w-16 mx-auto mb-3 opacity-30" />
+                <LeafIcon className="h-16 w-16 mx-auto mb-3 opacity-30" />
                 <p>Your plant's diagnosis will appear here.</p>
                 <p className="text-sm">Adjust sliders and click "Run Diagnosis"</p>
               </div>
