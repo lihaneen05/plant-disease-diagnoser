@@ -1,0 +1,5 @@
+{
+  "name": "Plant Disease Fuzzy Logic Diagnoser",
+  "description": "A web-based tool that uses fuzzy logic to diagnose plant leaf diseases based on the severity of various symptoms. Users can rate symptoms on a scale, and the application provides the most likely diagnosis with a visual representation of the result.",
+  "requestFramePermissions": []
+}
