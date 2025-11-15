@@ -1,113 +1,183 @@
-import React, { useState, useCallback } from 'react';
+/* src/App.tsx */
+import React, { useState, useCallback, useEffect } from 'react';
 import { SymptomSlider } from './components/SymptomSlider';
 import { DiagnosisResult } from './components/DiagnosisResult';
 import { runDiagnosis } from './services/fuzzyLogicService';
-import type { SymptomInputs, DiagnosisOutput } from './types';
+import type { SymptomInputs, DiagnosisOutput, Symptom } from './types';
 import { SYMPTOMS } from './constants';
-
-const LeafIcon = (props: any) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-    <path d="M10 2C7.24 5.76 7.24 18.24 10 22"/>
-  </svg>
-);
+import { LeafIcon, BotIcon } from './components/Icons';
 
 const App: React.FC = () => {
+  /* ---- Default values that match the screenshot ---- */
   const [symptoms, setSymptoms] = useState<SymptomInputs>({
-    spotting: 0,
-    discoloration: 0,
-    lesions: 0,
-    coating: 0,
-    wilting: 0,
+    spotting: 7.5,
+    discoloration: 6.8,
+    lesions: 5.0,
+    coating: 5.0,
+    wilting: 5.0,
   });
+
   const [result, setResult] = useState<DiagnosisOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleChange = (key: keyof SymptomInputs, value: number) => {
-    setSymptoms(prev => ({ ...prev, [key]: value }));
-  };
+  /* ---- Slider change handler ---- */
+  const handleSliderChange = useCallback((symptom: Symptom, value: number) => {
+    setSymptoms((prev) => ({ ...prev, [symptom]: value }));
+  }, []);
 
-  const handleDiagnose = () => {
+  /* ---- Run diagnosis ---- */
+  const handleDiagnose = useCallback(() => {
     setIsLoading(true);
+    setResult(null);
+
+    // Small delay for a smoother UX (feel free to remove)
     setTimeout(() => {
-      setResult(runDiagnosis(symptoms));
+      const diagnosis = runDiagnosis(symptoms);
+      setResult(diagnosis);
       setIsLoading(false);
-    }, 800);
-  };
+    }, 600);
+  }, [symptoms]);
+
+  /* ---- Auto-run on first mount (optional – matches screenshot) ---- */
+  useEffect(() => {
+    handleDiagnose();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-100 p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <header className="text-center mb-8">
-          <div className="flex justify-center items-center gap-2 mb-2">
-            <LeafIcon className="h-8 w-8 text-green-600" />
-            <h1 className="text-3xl md:text-4xl font-bold text-green-800">Plant Disease Diagnoser</h1>
-          </div>
-          <p className="text-green-700 max-w-2xl mx-auto">
-            A fuzzy logic-based expert system for identifying leaf diseases.
-          </p>
-          <p className="text-sm text-gray-600 mt-1">
-            Adjust the sliders below to match your plant's symptoms, then click 'Run Diagnosis' to let our fuzzy logic expert analyze the data.
-          </p>
-        </header>
+    <div className="min-h-screen bg-green-50 text-gray-900 font-sans">
+      {/* ------------------------------------------------- HEADER ------------------------------------------------- */}
+      <header className="bg-green-800 text-white py-6 px-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-center gap-3">
+          <LeafIcon className="h-10 w-10" />
+          <h1 className="text-3xl md:text-4xl font-bold">
+            Plant Disease Diagnoser
+          </h1>
+        </div>
+        <p className="text-center mt-2 max-w-3xl mx-auto text-sm md:text-base">
+          A fuzzy logic-based expert system for identifying leaf diseases.
+        </p>
+        <p className="text-center mt-1 text-xs md:text-sm text-green-100">
+          Adjust the sliders below to match your plant’s symptoms, then click{' '}
+          <strong>Run Diagnosis</strong> to let our fuzzy logic expert analyze the data.
+        </p>
+      </header>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Left: Sliders */}
-          <div className="bg-white p-6 rounded-2xl shadow-lg">
-            <h2 className="text-xl font-bold text-green-800 mb-4">Symptom Severity</h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Rate each symptom on a scale from 0 (none) to 10 (severe).
-            </p>
-            <div className="space-y-5">
-              {SYMPTOMS.map(s => (
-                <SymptomSlider
-                  key={s.id}
-                  label={s.label}
-                  desc={s.description}
-                  value={symptoms[s.id]}
-                  onChange={(v) => handleChange(s.id, v)}
-                />
-              ))}
-            </div>
-            <button
-              onClick={handleDiagnose}
-              disabled={isLoading}
-              className="mt-6 w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition flex items-center justify-center gap-2 disabled:opacity-70"
-            >
-              {isLoading ? (
-                <>Diagnosing...</>
-              ) : (
-                <>Run Diagnosis</>
-              )}
-            </button>
+      {/* ------------------------------------------------- MAIN GRID ------------------------------------------------- */}
+      <main className="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* ---------- LEFT PANEL – Symptom Sliders ---------- */}
+        <section className="bg-white rounded-xl shadow-md p-6 border border-green-200">
+          <h2 className="text-xl font-semibold text-green-800 mb-4 border-b pb-2">
+            Symptom Severity
+          </h2>
+          <p className="text-sm text-gray-600 mb-5">
+            Rate each symptom on a scale from <strong>0 (none)</strong> to{' '}
+            <strong>10 (severe)</strong>.
+          </p>
+
+          <div className="space-y-6">
+            {SYMPTOMS.map(({ id, label, description }) => (
+              <SymptomSlider
+                key={id}
+                label={label}
+                description={description}
+                value={symptoms[id]}
+                onChange={(v) => handleSliderChange(id, v)}
+              />
+            ))}
           </div>
 
-          {/* Right: Result */}
-          <div className="bg-white p-6 rounded-2xl shadow-lg">
-            <h2 className="text-xl font-bold text-green-800 mb-4">Diagnosis Result</h2>
+          <button
+            onClick={handleDiagnose}
+            disabled={isLoading}
+            className="mt-8 w-full bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+          >
             {isLoading ? (
-              <div className="text-center py-12 text-gray-500">
-                <div className="animate-spin w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-3"></div>
-                <p>Analyzing symptoms...</p>
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+                Diagnosing…
+              </>
+            ) : (
+              <>
+                <BotIcon className="h-5 w-5" />
+                Run Diagnosis
+              </>
+            )}
+          </button>
+        </section>
+
+        {/* ---------- RIGHT PANEL – Diagnosis Result ---------- */}
+        <section className="bg-white rounded-xl shadow-md p-6 border border-green-200 sticky top-6 h-fit">
+          <h2 className="text-xl font-semibold text-green-800 mb-4 border-b pb-2">
+            Diagnosis Result
+          </h2>
+
+          <div className="min-h-[520px] flex flex-col items-center justify-center">
+            {isLoading ? (
+              <div className="text-center text-gray-500">
+                <svg
+                  className="animate-spin h-12 w-12 text-green-600 mx-auto mb-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+                <p>Our fuzzy expert is analyzing the symptoms…</p>
               </div>
             ) : result ? (
               <DiagnosisResult result={result} />
             ) : (
-              <div className="text-center py-12 text-gray-400">
-                <LeafIcon className="h-16 w-16 mx-auto mb-3 opacity-30" />
-                <p>Your plant's diagnosis will appear here.</p>
-                <p className="text-sm">Adjust sliders and click "Run Diagnosis"</p>
+              <div className="text-center text-gray-400 p-8">
+                <LeafIcon className="h-16 w-16 mx-auto mb-3 text-gray-300" />
+                <p>Your plant’s diagnosis will appear here.</p>
+                <p className="text-sm mt-1">
+                  Adjust the sliders and click <strong>Run Diagnosis</strong>.
+                </p>
               </div>
             )}
           </div>
-        </div>
+        </section>
+      </main>
 
-        <footer className="text-center mt-10 text-xs text-gray-500">
-          <p>Built with React, TypeScript, and a dash of Fuzzy Logic.</p>
-          <p>Based on the work of Ahmad Shabbir, Haneen Tahir, and Hamza Amer Sheikh.</p>
-        </footer>
-      </div>
+      {/* ------------------------------------------------- FOOTER ------------------------------------------------- */}
+      <footer className="mt-12 py-4 text-center text-xs text-gray-500">
+        <p>Built with React, TypeScript, and a dash of Fuzzy Logic.</p>
+        <p>
+          Based on the work of Ahmad Shabbir, Haneen Tahir, and Hamza Amer
+          Sheikh.
+        </p>
+      </footer>
     </div>
   );
 };
