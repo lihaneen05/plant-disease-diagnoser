@@ -1,111 +1,81 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 import type { DiagnosisOutput } from '../types';
+import { LeafIcon, InfoIcon, WindIcon, SymptomsIcon, TreatmentIcon } from './Icons'; // Adjust path
 
-const InfoIcon = (props: any) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="16" x2="12" y2="12" />
-    <line x1="12" y1="8" x2="12.01" y2="8" />
-  </svg>
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+interface DiagnosisResultProps {
+  result: DiagnosisOutput;
+}
+
+const InfoSection: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode; number?: string }> = ({ title, icon, children, number }) => (
+  <div className="mb-4 pl-4 border-l-4 border-green-500 bg-green-50 p-3 rounded">
+    <h4 className="font-semibold text-green-800 flex items-center gap-2 mb-1">
+      {number && <span className="text-lg">{number}</span>} {icon} {title}
+    </h4>
+    <p className="text-sm text-gray-700 leading-relaxed">{children}</p>
+  </div>
 );
 
-const WarningIcon = (props: any) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-    <line x1="12" y1="9" x2="12" y2="13" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-
-const AlertIcon = (props: any) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="12" />
-    <line x1="12" y1="16" x2="12.01" y2="16" />
-  </svg>
-);
-
-const TreatmentIcon = (props: any) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-    <line x1="12" y1="19" x2="12" y2="23" />
-    <line x1="8" y1="23" x2="16" y2="23" />
-  </svg>
-);
-
-export const DiagnosisResult: React.FC<{ result: DiagnosisOutput }> = ({ result }) => {
-  const { disease, score, chartData, diseaseInfo } = result;
+export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ result }) => {
+  // Bar chart data (mimic screenshot: green bars, 0-1 scale, peak at score)
+  const chartData = {
+    labels: Array.from({ length: 10 }, (_, i) => `${i * 10}`),
+    datasets: [{
+      label: 'Fuzzy Output',
+      data: Array.from({ length: 10 }, (_, i) => {
+        const x = i * 10;
+        const score = result.score;
+        return Math.exp(-Math.pow((x - score) / 20, 2)); // Gaussian peak
+      }),
+      backgroundColor: 'rgba(34, 197, 94, 0.6)', // Green
+    }],
+  };
+  const options = { responsive: true, scales: { y: { beginAtZero: true, max: 1 } } };
 
   return (
-    <div className="space-y-5">
-      <div className="text-center">
-        <p className="text-sm text-green-700 font-medium">Most Likely Diagnosis</p>
-        <h3 className="text-2xl font-bold text-green-800 mt-1">{disease}</h3>
-        <p className="text-3xl font-bold text-green-600 mt-1">{score.toFixed(1)}%</p>
-        <p className="text-xs text-gray-600">Diagnosis Score</p>
-      </div>
-
-      <div className="bg-gray-50 p-3 rounded-lg">
-        <p className="text-xs text-center text-gray-600 mb-2">
-          Visualization of the aggregated fuzzy output and the final diagnosis score
-        </p>
-        <div className="h-40">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="x" tick={{ fontSize: 10 }} />
-              <YAxis domain={[0, 1]} tick={{ fontSize: 10 }} />
-              <Tooltip 
-                contentStyle={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: '6px' }}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="y" 
-                stroke="#22c55e" 
-                strokeWidth={3} 
-                dot={{ fill: '#22c55e', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+    <div className="animate-fade-in">
+      <div className="text-center mb-4">
+        <p className="text-sm text-gray-600 mb-2">Most Likely Diagnosis</p>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <input type="radio" id="disease" name="diagnosis" checked className="mr-2" />
+          <label htmlFor="disease" className="text-3xl font-bold text-green-700">
+            <LeafIcon className="h-7 w-7 inline mr-1" />
+            {result.disease}
+          </label>
         </div>
+        <p className="text-sm text-gray-500">Diagnostic Score: <span className="font-semibold text-green-700">{result.score.toFixed(2)}</span></p>
       </div>
 
-      {diseaseInfo && (
-        <div className="space-y-3 text-sm">
-          <div className="flex gap-2">
-            <InfoIcon className="h-4 w-4 text-blue-600 mt-0.5" />
-            <div>
-              <p className="font-medium text-green-800">Description</p>
-              <p className="text-gray-700">{diseaseInfo.description}</p>
-            </div>
-          </div>
+      <div className="w-full h-64 mt-4 mb-4">
+        <Bar data={chartData} options={options} />
+      </div>
+      <p className="text-xs text-center text-gray-500 mb-6">Visualization of the aggregated fuzzy output and the final diagnostic score.</p>
 
-          <div className="flex gap-2">
-            <WarningIcon className="h-4 w-4 text-orange-600 mt-0.5" />
-            <div>
-              <p className="font-medium text-green-800">Common Causes</p>
-              <p className="text-gray-700">{diseaseInfo.causes}</p>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <AlertIcon className="h-4 w-4 text-red-600 mt-0.5" />
-            <div>
-              <p className="font-medium text-green-800">Common Symptoms</p>
-              <p className="text-gray-700">{diseaseInfo.commonSymptoms}</p>
-            </div>
-          </div>
-
-          <div className="bg-green-50 p-3 rounded-lg border border-green-200 flex gap-2">
-            <TreatmentIcon className="h-4 w-4 text-green-600 mt-0.5" />
-            <div>
-              <p className="font-medium text-green-800">Treatment</p>
-              <p className="text-green-700">{diseaseInfo.treatment}</p>
-            </div>
-          </div>
+      {result.diseaseInfo && (
+        <div className="space-y-4 p-4 bg-green-50 rounded-lg border border-green-200">
+          <InfoSection number="①" title="Description" icon={<InfoIcon className="h-5 w-5" />}>
+            {result.diseaseInfo.description}
+          </InfoSection>
+          <InfoSection number="②" title="Common Causes" icon={<WindIcon className="h-5 w-5" />}>
+            {result.diseaseInfo.causes}
+          </InfoSection>
+          <InfoSection title="Common Symptoms" icon={<SymptomsIcon className="h-5 w-5" />}>
+            {result.diseaseInfo.commonSymptoms}
+          </InfoSection>
+          <InfoSection title="Treatment" icon={<TreatmentIcon className="h-5 w-5" />}>
+            {result.diseaseInfo.treatment}
+          </InfoSection>
         </div>
       )}
     </div>
